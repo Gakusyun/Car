@@ -16,8 +16,8 @@ const CAR = String(import.meta.env.VITE_CAR ?? "");
 const EMAIL = String(import.meta.env.VITE_EMAIL ?? "");
 
 /**
- * 通知接口地址与设备令牌分开存放（各为 base64），运行时解码，
- * 构建产物中不出现明文地址与令牌。令牌随请求体一起提交。
+ * 通知接口地址与设备令牌分开存放，构建时自动 base64 编码，
+ * 运行时解码，构建产物中不出现明文地址与令牌。令牌随请求体一起提交。
  */
 const fromB64 = (v: unknown): string => {
   try {
@@ -26,8 +26,8 @@ const fromB64 = (v: unknown): string => {
     return "";
   }
 };
-const PUSH_URL = fromB64(import.meta.env.VITE_P1);
-const DEVICE_KEY = fromB64(import.meta.env.VITE_P2);
+const PUSH_URL = fromB64(import.meta.env.VITE_PUSH_URL);
+const DEVICE_KEY = fromB64(import.meta.env.VITE_DEVICE_KEY);
 
 /** 通知图标：优先用环境变量 VITE_ICON，未配置则用默认图（需 iOS 15+） */
 const ICON =

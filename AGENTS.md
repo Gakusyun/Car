@@ -15,7 +15,8 @@ React 19 + Vite + Tailwind CSS v4，纯静态产物（`dist/`），无后端、�
    - 请求方式固定为 `POST` + `application/x-www-form-urlencoded` + `mode: "no-cors"`。
    - 服务器不返回 CORS 头且预检 `OPTIONS` 返回 400，**禁止**改成 `application/json`
      （会触发预检被浏览器拦截）；urlencoded 是 CORS 简单请求头，no-cors 下可直接携带。
-   - 接口地址（`VITE_P1`）与设备令牌（`VITE_P2`）在构建产物中保持 base64，运行时解码。
+   - 接口地址（`VITE_PUSH_URL`）与设备令牌（`VITE_DEVICE_KEY`）在 .env 中填明文，
+     构建时统一 base64 编码注入，构建产物中保持 base64，运行时解码。
 4. **备案信息按环境变量显示**：`VITE_ICP`、`VITE_GA` 任一为空则该行不显示；
    `VITE_GA` 为空时公安备案图标（img）也必须一并隐藏。两者都为空时整个 footer 不渲染。
 5. **加密实现只用浏览器 WebCrypto**，不引入任何第三方加密库（`src/aes.ts`）。
