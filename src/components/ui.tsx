@@ -1,5 +1,9 @@
 import type { ReactNode } from "react";
 
+/** 输入框统一样式（见 STYLE.md） */
+export const INPUT =
+  "px-2 py-1.5 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-black text-sm focus:border-sky-500 dark:focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-500 dark:focus:ring-sky-400 w-full";
+
 /** 白色圆角分区卡片，可带右上角操作按钮 */
 export function Card({
   title,

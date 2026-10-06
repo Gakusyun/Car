@@ -21,50 +21,67 @@ const ENDPOINT = (() => {
   }
 })();
 
+/** 通知图标（需 iOS 15+），可换成任意可访问的图片 URL（如自己车的照片） */
+const ICON =
+  "https://cdn.jsdelivr.net/gh/twitter/twemoji@v14.0.2/assets/72x72/1f697.png";
+
 const COOLDOWN_KEY = "car-notify-last";
-const COOLDOWN_SECONDS = 60;
-const FEEDBACK_MS = 30_000;
+const COOLDOWN_MS = 60_000;
 
-type Feedback = "ok" | "err";
+type ToastKind = "ok" | "err" | "warn";
+type Toast = { id: number; kind: ToastKind; text: string };
 
-function remainSeconds(): number {
-  const last = Number(localStorage.getItem(COOLDOWN_KEY) || 0);
-  return Math.max(0, Math.ceil((last + COOLDOWN_SECONDS * 1000 - Date.now()) / 1000));
-}
+const TOAST_MS: Record<ToastKind, number> = {
+  ok: 30_000,
+  err: 30_000,
+  warn: 3_000,
+};
+
+const TOAST_STYLE: Record<ToastKind, string> = {
+  ok: "border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400",
+  err: "border-rose-300 dark:border-rose-700 text-rose-600 dark:text-rose-400",
+  warn: "border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300",
+};
 
 function pad(n: number): string {
   return String(n).padStart(2, "0");
 }
 
 export default function App() {
-  const [sending, setSending] = useState(false);
-  const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const [remain, setRemain] = useState(remainSeconds);
+  const [toast, setToast] = useState<Toast | null>(null);
+  const inflight = useRef(false);
   const [copied, setCopied] = useState(false);
-  const fbTimer = useRef<number | undefined>(undefined);
+  const toastTimer = useRef<number | undefined>(undefined);
+  const copyTimer = useRef<number | undefined>(undefined);
 
-  // 冷却倒计时：每秒刷新，归零自动停止
-  useEffect(() => {
-    if (remain <= 0) return;
-    const t = window.setInterval(() => setRemain(remainSeconds()), 1000);
-    return () => window.clearInterval(t);
-  }, [remain]);
+  useEffect(
+    () => () => {
+      window.clearTimeout(toastTimer.current);
+      window.clearTimeout(copyTimer.current);
+    },
+    [],
+  );
 
-  // 反馈提示 30 秒后自动清除
-  useEffect(() => () => window.clearTimeout(fbTimer.current), []);
-
-  function showFeedback(v: Feedback) {
-    setFeedback(v);
-    window.clearTimeout(fbTimer.current);
-    fbTimer.current = window.setTimeout(() => setFeedback(null), FEEDBACK_MS);
+  function showToast(kind: ToastKind, text: string) {
+    setToast({ id: Date.now(), kind, text });
+    window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(
+      () => setToast(null),
+      TOAST_MS[kind],
+    );
   }
 
   async function send() {
-    if (sending || remain > 0) return;
-    setSending(true);
-    // 点击即起算冷却，防止反复点击
+    if (inflight.current) return;
+    // 发送时才检查间隔：不倒计时、不改按钮样式
+    const last = Number(localStorage.getItem(COOLDOWN_KEY) || 0);
+    if (Date.now() - last < COOLDOWN_MS) {
+      showToast("warn", "操作频繁，请稍后再试");
+      return;
+    }
+    // 先写时间戳：飞行中的重复点击也会落进 60 秒拦截
     localStorage.setItem(COOLDOWN_KEY, String(Date.now()));
-    setRemain(COOLDOWN_SECONDS);
+    inflight.current = true;
     try {
       if (!ENDPOINT) throw new Error("missing endpoint");
       const d = new Date();
@@ -72,6 +89,7 @@ export default function App() {
         title: `挪车提醒 · ${PLATE}`,
         body: `有人请求你挪车 ${pad(d.getHours())}:${pad(d.getMinutes())}`,
         group: "挪车",
+        icon: ICON,
         level: "timeSensitive",
         ttl: "600",
       });
@@ -80,11 +98,11 @@ export default function App() {
         mode: "no-cors",
         cache: "no-store",
       });
-      showFeedback("ok");
+      showToast("ok", "✓ 车主已收到通知");
     } catch {
-      showFeedback("err");
+      showToast("err", "服务器错误，请使用其他方式联系");
     } finally {
-      setSending(false);
+      inflight.current = false;
     }
   }
 
@@ -92,7 +110,8 @@ export default function App() {
     try {
       await navigator.clipboard.writeText(EMAIL);
       setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
+      window.clearTimeout(copyTimer.current);
+      copyTimer.current = window.setTimeout(() => setCopied(false), 2000);
     } catch {
       /* 剪贴板不可用则忽略，邮箱文字本身可长按复制 */
     }
@@ -142,25 +161,10 @@ export default function App() {
           <button
             type="button"
             onClick={send}
-            disabled={sending || remain > 0}
-            className="w-full px-4 py-3 rounded-lg bg-sky-600 border border-sky-600 text-white text-base font-medium transition-colors disabled:bg-slate-300 disabled:border-slate-300 disabled:text-slate-500 dark:disabled:bg-slate-700 dark:disabled:border-slate-700 dark:disabled:text-slate-400"
+            className="w-full px-4 py-3 rounded-lg bg-sky-600 border border-sky-600 text-white text-base font-medium transition-colors active:bg-sky-700"
           >
-            {sending
-              ? "发送中…"
-              : remain > 0
-                ? `${remain} 秒后可再次发送`
-                : "发送挪车信息"}
+            发送挪车信息
           </button>
-          {feedback === "ok" && (
-            <p className="text-sm text-emerald-600 dark:text-emerald-400">
-              ✓ 车主已收到通知
-            </p>
-          )}
-          {feedback === "err" && (
-            <p className="text-sm text-rose-500 dark:text-rose-400">
-              服务器错误，请使用其他方式联系
-            </p>
-          )}
         </Card>
 
         <footer className="text-center text-xs text-slate-300 dark:text-slate-600 pt-4 space-y-1">
@@ -189,6 +193,25 @@ export default function App() {
           </div>
         </footer>
       </div>
+
+      {/* 提示 toast：底部居中，成功/失败 30 秒、频繁提示 3 秒 */}
+      {toast && (
+        <div
+          key={toast.id}
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-2rem)]"
+        >
+          <div
+            className={
+              "px-4 py-2.5 rounded-lg border bg-white dark:bg-black shadow-xl text-sm font-medium " +
+              TOAST_STYLE[toast.kind]
+            }
+          >
+            {toast.text}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
