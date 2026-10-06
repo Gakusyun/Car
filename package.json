@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "test": "pnpm --yes dlx tsx test/aes.test.ts",
     "preview": "vite preview"
   },
   "dependencies": {
