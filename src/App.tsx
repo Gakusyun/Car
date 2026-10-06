@@ -156,9 +156,7 @@ export default function App() {
               </SmallBtn>
             </div>
           </div>
-        </Card>
 
-        <Card>
           <button
             type="button"
             onClick={send}
