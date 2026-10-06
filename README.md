@@ -23,6 +23,7 @@ pnpm build    # 产物在 dist/
 | `VITE_PLATE` | 车牌号 |
 | `VITE_CAR` | 颜色 + 车型 |
 | `VITE_EMAIL` | 联系邮箱（页面展示 + mailto） |
+| `VITE_ICON` | 通知图标 URL（可选，留空用内置默认图） |
 | `VITE_P1` | 接口地址 base64，如 `printf %s "https://xxx/" \| base64` |
 | `VITE_P2` | 令牌 base64 |
 

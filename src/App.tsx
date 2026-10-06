@@ -21,9 +21,10 @@ const ENDPOINT = (() => {
   }
 })();
 
-/** 通知图标（需 iOS 15+），可换成任意可访问的图片 URL（如自己车的照片） */
+/** 通知图标：优先用环境变量 VITE_ICON，未配置则用默认图（需 iOS 15+） */
 const ICON =
-  "https://cdn.jsdelivr.net/gh/twitter/twemoji@v14.0.2/assets/72x72/1f697.png";
+  String(import.meta.env.VITE_ICON ?? "").trim() ||
+  "https://files.238806.xyz/file/oeGYM365.png";
 
 const COOLDOWN_KEY = "car-notify-last";
 const COOLDOWN_MS = 60_000;
