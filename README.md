@@ -28,12 +28,12 @@ pnpm test     # 加密自测：与 OpenSSL 交叉验证 + 官方文档示例向�
 | `VITE_ICON` | 通知图标 URL（可选，留空用内置默认图） |
 | `VITE_ICP` | ICP 备案号（可选，留空则备案行不显示） |
 | `VITE_GA` | 公安备案号（可选，留空则备案行与公安备案图标都不显示） |
-| `VITE_P1` | 接口地址 base64，POST 目标，如 `printf %s "https://xxx/push" \| base64` |
-| `VITE_P2` | 设备令牌 base64，随请求体提交 |
+| `VITE_PUSH_URL` | 通知接口地址（明文），构建时自动 base64 编码，POST 目标 |
+| `VITE_DEVICE_KEY` | 设备令牌（明文），构建时自动 base64 编码，随请求体提交 |
 | `VITE_ALGO` | 加密算法 `AES128` / `AES192` / `AES256`（可选，缺省 AES256） |
 | `VITE_MODE` | 加密模式 `CBC` / `ECB` / `GCM`（可选，缺省 CBC） |
 | `VITE_PAD` | 填充 `pkcs7` / `noPadding`（可选，缺省 pkcs7） |
-| `VITE_KEY` | 密钥 base64，如 `printf %s "32位密钥" \| base64`；留空则明文推送 |
+| `VITE_KEY` | 密钥（明文，16/24/32 位），构建时自动 base64 编码；留空则明文推送 |
 | `VITE_IV` | IV，留空则每次随机生成（CBC 16 位 / GCM 12 位 / ECB 不需要） |
 
 部署到托管平台时，把同样的变量配到平台的环境变量里即可。
