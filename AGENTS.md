@@ -1,7 +1,7 @@
 # AGENTS.md — 挪车提醒（car）
 
 贴在车上的二维码指向的静态页面：访客查看车辆信息，点击「发送挪车信息」向车主手机发 Bark 推送。
-React 19 + Vite + Tailwind CSS v4，纯静态产物（`dist/`），无后端、无容器。
+Preact 11 + Vite + Tailwind CSS v4，纯静态产物（`dist/`），无后端、无容器。
 
 ## 硬性约束（不可违背）
 
@@ -35,6 +35,11 @@ React 19 + Vite + Tailwind CSS v4，纯静态产物（`dist/`），无后端、�
 
 - `src/App.tsx` — 页面与发送逻辑（单组件，无路由）；`src/aes.ts` — 加密模块（纯函数，禁止访问
   `import.meta.env`/DOM UI，便于 Node 直接测试）；`src/components/ui.tsx` — 共享组件。
+- UI 层是 **Preact 11**：hooks 从 `preact/hooks` 导入，类型用 preact 自带的（如 `ComponentChildren`），
+  入口用 `render()` 而非 `createRoot()`；JSX 运行时由 `vite.config.ts` 的
+  `oxc.jsx.importSource = "preact"` 指向 `preact/jsx-runtime`（配合 tsconfig 的 `jsxImportSource`），
+  因此**不需要也不允许**再引入 `react`、`react-dom`、`@types/react`、`@vitejs/plugin-react`。
+  Preact 没有 React `StrictMode` 的等价物，入口不再包 `<StrictMode>`。
 - 样式规范以 **STYLE.md 为唯一权威**：只用 Tailwind utility class、只用默认色板（sky/slate/emerald/rose）、
   所有颜色必须带 `dark:` 变体、输入框统一用 `INPUT` 常量、容器复用 `Card`/`SmallBtn`。
 - 页面主要适配手机竖屏，改动需在窄屏下检查。

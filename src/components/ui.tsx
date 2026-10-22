@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ComponentChildren } from "preact";
 
 /** 输入框统一样式（见 STYLE.md） */
 export const INPUT =
@@ -11,8 +11,8 @@ export function Card({
   children,
 }: {
   title?: string;
-  action?: ReactNode;
-  children: ReactNode;
+  action?: ComponentChildren;
+  children: ComponentChildren;
 }) {
   return (
     <section className="bg-white dark:bg-black rounded-xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm dark:shadow-none space-y-3">
@@ -35,7 +35,7 @@ export function SmallBtn({
 }: {
   onClick?: () => void;
   href?: string;
-  children: ReactNode;
+  children: ComponentChildren;
 }) {
   const cls =
     "text-xs px-2 py-1 rounded-md border border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-black transition-colors";
