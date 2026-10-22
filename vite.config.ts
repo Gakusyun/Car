@@ -1,5 +1,4 @@
 import { defineConfig, loadEnv } from "vite";
-import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
 // ponytail: 相对 base，GitHub Pages 子路径 / Vercel dist 静态托管都可用
@@ -11,7 +10,11 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: "./",
-    plugins: [react(), tailwindcss()],
+    plugins: [tailwindcss()],
+    // Preact：JSX 自动运行时指向 preact/jsx-runtime，无需 React 插件
+    oxc: {
+      jsx: { runtime: "automatic", importSource: "preact" },
+    },
     define: {
       "import.meta.env.VITE_PUSH_URL": JSON.stringify(b64(env.VITE_PUSH_URL)),
       "import.meta.env.VITE_DEVICE_KEY": JSON.stringify(
